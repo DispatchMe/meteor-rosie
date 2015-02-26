@@ -1,3 +1,11 @@
 {
+  "CHANNEL_PROJECTS": {
+    "name-of-channel": {
+      "yourgithubname/reponame": "branch-to-announce-releases-on"
+    }
+  },
+  "public": {
+    "GITHUB_TOKEN": "Get from https://help.github.com/articles/creating-an-access-token-for-command-line-use"
+  },
   "SLACK_TOKEN": "Get from https://my.slack.com/services/new/bot"
 }
