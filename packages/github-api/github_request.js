@@ -7,7 +7,6 @@ var apiUrl = 'https://api.github.com';
  */
 Github.request = function (path) {
   var url = apiUrl + path;
-
   var result = HTTP.get(url, {
     headers: {
       Authorization: 'token ' + Meteor.settings.public.GITHUB_TOKEN,
@@ -33,7 +32,7 @@ Github.request = function (path) {
 
 // Parse the Github Link HTTP header used for pageination
 var parseLinkHeader = function (header) {
-  if (header.length == 0) {
+  if (!header || header.length == 0) {
     throw new Error('input must not be of zero length');
   }
 
@@ -76,9 +75,14 @@ PageIterator.prototype._load = function (index) {
 
   this.data = response.data;
 
-  var links = parseLinkHeader(response.headers['link']);
-  this.hasNextPage = !!links.next;
-
+  var linkHeader = response.headers['link'];
+  if (linkHeader) {
+    var links = parseLinkHeader(linkHeader);
+    this.hasNextPage = !!links.next;  
+  } else {
+    this.hasNextPage = false;
+  }
+  
   this.pageIndex = index;
 };
 

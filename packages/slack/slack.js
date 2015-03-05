@@ -13,24 +13,27 @@ Slack.login = function (token) {
   var autoReconnect = true, autoMark = true;
   var client = Slack.client = new slackClient(token, autoReconnect, autoMark);
 
-  client.on('open', function () {
-    console.log('Slack: open');
-    _.each(loginHooks, function (hook) {
-      hook();
-    });
-  });
-
-  client.on('message', function (message) {
-    console.log('Slack: message');
-    _.each(messageHooks, function (hook) {
-      hook(message);
-    });
-  });
-
-  client.on('error', function (error) {
-    console.error('Error: %s', error);
-  });
-
+  events = {
+    open: function () {
+      console.log('Slack: open');
+      _.each(loginHooks, function (hook) {
+        hook();
+      });
+    },
+    message: function (message) {
+      _.each(messageHooks, function (hook) {
+        hook(message);
+      });
+    },
+    error: function (error) {
+      console.error('Slack Error: %s', error);
+    }
+  };
+  
+  for (var e in events) {
+    client.on(e, Meteor.bindEnvironment(events[e]));  
+  }
+  
   client.login();
 };
 

@@ -13,8 +13,7 @@ Github.commitsSinceLastVersion = function (commitHash) {
  * @returns {string}
  */
 Github.releaseDescription = function (repo, commitHash) {
-  //Github.updateEvents(repo);
-
+  events = Github.updateEvents(repo);
   var message = '';
 
   // TODO remove ex. message for testing and

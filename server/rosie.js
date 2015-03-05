@@ -29,17 +29,18 @@ Rosie.processMessage = function (message) {
 
     if (message.text.indexOf('release notes') > -1) {
       // XXX allow the message to pass in the project to use.
-      var repo = Meteor.settings['CHANNEL_PROJECTS'][channelName][0];
+      var repo = Object.keys(Meteor.settings['CHANNEL_PROJECTS'][channelName])[0];
 
       // The commit hash will be passed in
       // Ex. "release notes 078678912009912f18799a27add06a3f9966033c"
       var commitHash = message.text.substring(14);
-
+      Github.releaseDescription(repo, commitHash);
       channel.postMessage({
         username: 'rosie-the-release-robot',
         icon_url: 'https://s3-us-west-2.amazonaws.com/slack-files2/avatars/2015-02-21/3799878733_5a928450e7107b46437f_72.jpg',
-        text: Github.releaseDescription(repo, commitHash)
+        text: commitHash//Github.releaseDescription(repo, commitHash)
       });
+
     }
   }
 };
