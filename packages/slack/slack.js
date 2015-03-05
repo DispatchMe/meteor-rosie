@@ -14,14 +14,16 @@ Slack.login = function (token) {
   var client = Slack.client = new slackClient(token, autoReconnect, autoMark);
 
   client.on('open', function () {
+    console.log('Slack: open');
     _.each(loginHooks, function (hook) {
       hook();
     });
   });
 
-  client.on('message', function () {
+  client.on('message', function (message) {
+    console.log('Slack: message');
     _.each(messageHooks, function (hook) {
-      hook();
+      hook(message);
     });
   });
 
