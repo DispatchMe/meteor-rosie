@@ -13,7 +13,7 @@ Github.commitsSinceLastVersion = function (commitHash) {
  * @returns {string}
  */
 Github.releaseDescription = function (repo, commitHash) {
-  Github.updateEvents(repo);
+  //Github.updateEvents(repo);
 
   var message = '';
 
