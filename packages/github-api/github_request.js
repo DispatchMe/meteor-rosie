@@ -7,6 +7,7 @@ var apiUrl = 'https://api.github.com';
  */
 Github.request = function (path) {
   var url = apiUrl + path;
+  console.log("URL ", url);
   var result = HTTP.get(url, {
     headers: {
       Authorization: 'token ' + Meteor.settings.public.GITHUB_TOKEN,
@@ -92,7 +93,7 @@ PageIterator.prototype._load = function (index) {
  */
 PageIterator.prototype.goToNextPage = function () {
   if (!this.hasNextPage) return false;
-
+  var hasNextPage = this.hasNextPage;
   this._load(this.pageIndex + 1);
-  return this.hasNextPage;
+  return hasNextPage;
 };

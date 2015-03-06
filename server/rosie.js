@@ -34,17 +34,16 @@ Rosie.processMessage = function (message) {
       // The commit hash will be passed in
       // Ex. "release notes 078678912009912f18799a27add06a3f9966033c"
       var commitHash = message.text.substring(14);
-      Github.releaseDescription(repo, commitHash);
       channel.postMessage({
         username: 'rosie-the-release-robot',
         icon_url: 'https://s3-us-west-2.amazonaws.com/slack-files2/avatars/2015-02-21/3799878733_5a928450e7107b46437f_72.jpg',
-        text: commitHash//Github.releaseDescription(repo, commitHash)
+        text: Github.releaseDescription(repo, commitHash)
       });
 
     }
   }
 };
-
+Github.Events.remove({});
 Slack.onLogin(Rosie.start);
 Slack.onMessage(Rosie.processMessage);
 Slack.login(Meteor.settings.SLACK_TOKEN);
