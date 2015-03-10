@@ -1,7 +1,7 @@
 Rosie = {};
 
-var HELP_MESSAGE = 'Type "release notes [commithash]" and rosie will list all' +
-  ' of the closed github issues since the last release';
+var HELP_MESSAGE = 'Type "closed issues [commit|tag]" to list the closed issues ' +
+  'after that commit or tag (inclusive).';
 
 Rosie.start = function () {
   // XXX, not for v1
@@ -9,6 +9,8 @@ Rosie.start = function () {
   // and whenever code is pushed to the configured branches
   // automatically post the release notes to that channel.
 };
+
+var CHANNEL_REPOS = Meteor.settings['CHANNEL_REPOS'];
 
 /**
  * Process message from slack.
@@ -24,21 +26,33 @@ Rosie.processMessage = function (message) {
 
   console.log("Received: %s %s @%s %s '%s'", type, channelName, user.name, message.ts, message.text);
 
-  if (type === 'message') {
-    if (message.text === 'help') return channel.send(HELP_MESSAGE);
+  var messageText = message && message.text || '';
 
-    if (message.text.indexOf('release notes') > -1) {
+  if (messageText.indexOf('rosie') > -1) {
+    if (messageText.indexOf('help') > -1) return channel.send(HELP_MESSAGE);
+
+    if (messageText.indexOf('closed issues') > -1) {
+      // Find the repo -> branche dict for the current channel.
+      var reposBranches = CHANNEL_REPOS[channelName];
+      if (!reposBranches) return;
+
+      // Lookup the branch for the channel.
+      // Right now we just use the first repo.
       // XXX allow the message to pass in the project to use.
-      var repo = Meteor.settings['CHANNEL_PROJECTS'][channelName][0];
+      var repo, branch;
+      for (repo in reposBranches) {
+        branch = reposBranches[repo];
+        break;
+      }
 
-      // The commit hash will be passed in
-      // Ex. "release notes 078678912009912f18799a27add06a3f9966033c"
-      var commitHash = message.text.substring(14);
+      var query = messageText.split(/(.*)closed\ issues\ /)[2] || '';
+
+      var releaseText = Github.releaseDescription({ repo: repo, branch: branch, from: query });
 
       channel.postMessage({
-        username: 'rosie-the-release-robot',
+        username: 'rosie',
         icon_url: 'https://s3-us-west-2.amazonaws.com/slack-files2/avatars/2015-02-21/3799878733_5a928450e7107b46437f_72.jpg',
-        text: Github.releaseDescription(repo, commitHash)
+        text: releaseText
       });
     }
   }

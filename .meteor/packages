@@ -10,5 +10,5 @@ autopublish # for debugging only, remove for release
 http
 underscore
 
-github-api
+dispatch:github-api
 slack

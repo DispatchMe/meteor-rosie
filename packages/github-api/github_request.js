@@ -33,7 +33,7 @@ Github.request = function (path) {
 
 // Parse the Github Link HTTP header used for pageination
 var parseLinkHeader = function (header) {
-  if (header.length == 0) {
+  if (!header || header.length == 0) {
     throw new Error('input must not be of zero length');
   }
 
@@ -76,9 +76,14 @@ PageIterator.prototype._load = function (index) {
 
   this.data = response.data;
 
-  var links = parseLinkHeader(response.headers['link']);
-  this.hasNextPage = !!links.next;
-
+  var linkHeader = response.headers['link'];
+  if (linkHeader) {
+    var links = parseLinkHeader(linkHeader);
+    this.hasNextPage = !!links.next;  
+  } else {
+    this.hasNextPage = false;
+  }
+  
   this.pageIndex = index;
 };
 
@@ -88,7 +93,7 @@ PageIterator.prototype._load = function (index) {
  */
 PageIterator.prototype.goToNextPage = function () {
   if (!this.hasNextPage) return false;
-
+  var hasNextPage = this.hasNextPage;
   this._load(this.pageIndex + 1);
-  return this.hasNextPage;
+  return hasNextPage;
 };
