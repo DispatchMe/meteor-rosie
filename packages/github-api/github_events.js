@@ -5,16 +5,15 @@ Github.Events = new Meteor.Collection('github-events');
  */
 Github.updateEvents = function (repo) {
   var iterator = new Github.PageIterator('/repos/' + repo + '/issues/events');
-  var stopIteration = false;
   var newEventCount = 0;
   // Stop iterating when we hit an event we have already cached.
-  while (iterator.goToNextPage() && !stopIteration) {  
+  while (iterator.goToNextPage()) {  
     _.each(iterator.data, function(e){
       if (Github.Events.findOne({id: e.id}) == null) {
           Github.Events.insert(e);
           newEventCount++;
       } else {
-        stopIteration = true;
+        return;
       }
     });
   }
