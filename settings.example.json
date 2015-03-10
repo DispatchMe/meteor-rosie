@@ -1,6 +1,6 @@
 {
-  "CHANNEL_PROJECTS": {
-    "name-of-channel": {
+  "CHANNEL_REPOS": {
+    "#name-of-channel": {
       "yourgithubname/reponame": "branch-to-announce-releases-on"
     }
   },

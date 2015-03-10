@@ -5,17 +5,26 @@ Github.Events = new Meteor.Collection('github-events');
  */
 Github.updateEvents = function (repo) {
   var iterator = new Github.PageIterator('/repos/' + repo + '/issues/events');
+  
   var newEventCount = 0;
-  // Stop iterating when we hit an event we have already cached.
-  while (iterator.goToNextPage()) {  
-    _.each(iterator.data, function(e){
-      if (Github.Events.findOne({id: e.id}) == null) {
-          Github.Events.insert(e);
-          newEventCount++;
-      } else {
-        return;
-      }
-    });
-  }
-  console.log("Github: new event count ", newEventCount);
+
+  var logNewEvents = function () {
+    console.log('Github: cached', newEventCount, 'new events for', repo);
+  };
+
+  while (iterator.goToNextPage()) {
+    for (var i = 0; i < iterator.data.length; i++) {
+      var githubEvent = iterator.data[i];
+      githubEvent._id = githubEvent.id;
+
+      var result = Github.Events.upsert(githubEvent.id, githubEvent);
+      
+      // Stop iterating when we hit an event we have already cached.
+      if (!result.insertedId) return logNewEvents();
+
+      newEventCount++;
+    }
+
+    logNewEvents();
+  };
 };

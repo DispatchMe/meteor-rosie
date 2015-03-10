@@ -10,11 +10,11 @@ callback-hook@1.0.2
 check@1.0.4
 ddp@1.0.14
 deps@1.0.6
+dispatch:github-api@0.0.0
 ejson@1.0.5
 fastclick@1.0.2
 follower-livedata@1.0.3
 geojson-utils@1.0.2
-github-api@0.0.0
 html-tools@1.0.3
 htmljs@1.0.3
 http@1.0.10

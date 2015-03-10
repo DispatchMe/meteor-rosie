@@ -1,57 +1,3 @@
-/**
- * Find all the commits until the previous version, based on semver git tags.
- * @param commitHash
- */
-Github.commitsSinceLastVersion = function (repo, commitHash) {
-  var tagsIds =  Github.getTags(repo).map(function(tag){
-    return tag.commit.sha;
-  });
-  var ids = [];
-  var commitIndex;
-  Github.commitIterator(repo, function(commit){
-    ids.push(commit.sha)
-    commitIndex = ids.indexOf(commitHash);
-    if (commitIndex == -1) {
-      if (tagsIds[0] == commit.sha){
-        tagsIds.shift();
-      }
-    }
-    return commitIndex > -1 && tagsIds[0] == commit.sha;
-  });
-  ids.splice(0, commitIndex);
-  if (commitIndex == -1){
-    return null;
-  }
-  return ids;
-}
-
-Github.commitsSinceTag = function (repo, tag) {
-  var tags = Github.getTags(repo);
-  if (tag == 'latest'){
-    tag = tags[0].name;
-  }
-  console.log("TAG", tag);
-  var startId;
-  var endId = _.find(tags, function(currentTag) {
-    if (startId) {
-      return currentTag.commit.sha;
-    } else if (currentTag.name == tag) {
-      startId = currentTag.commit.sha;
-    }
-  });
-  console.log("start, end", startId, endId);
-  var ids = []; 
-  Github.commitIterator(repo, function(commit) {
-    if (ids.length > 0 || commit.sha == startId) {
-      ids.push(commit.sha);
-      if (commit.sha == endId)
-        return true;
-    }
-  });
-  console.log(ids);
-  return ids;
-}
-
 Github.commitIterator = function(repo, callback) {
   var iterator = new Github.PageIterator('/repos/' + repo + '/commits');
   while (iterator.goToNextPage()) {
@@ -61,36 +7,105 @@ Github.commitIterator = function(repo, callback) {
       }
     });
   }
+};
+
+// If the query is a commit hash, return that.
+// Otherwise assume it is a tag and lookup the commit hash for the tag.
+var shaForQuery = function (query, tags) {
+  if (!query || !query.length) return null;
+
+  if (query.length === 40) return query;
+
+  var shaForTag = null;
+
+  tags.some(function (tag) {
+    if (tag.name === query) {
+      shaForTag = tag.commit.sha;
+      return true;
+    }
+  });
+
+  return shaForTag;
+};
+
+/**
+ * Get the commits on the branch after the commit hash or tag.
+ * @param options
+ * @param options.repo The repo to search. Ex. dispatchme/meteor-slack-releases
+ * @param [options.branch] The branch to search. Defaults to master.
+ * @param [options.from] The oldest commit or tag to include (inclusive).
+ * If nothing is passed, it will include the first commit.
+ * @param [options.to] The newest commit or tag to include (inclusive).
+ * If nothing is passed, it will include the latest commit.
+ * @returns {Array.<String>} The commit shas.
+ */
+Github.commits = function (options) {
+  var tags = Github.getTags(options.repo);
+
+  // TODO
+  options.branch = options.branch || 'master';
+
+  // The newest commit sha to include.
+  var startAtSha = shaForQuery(options.to, tags);
+
+  // The oldest commit sha to include.
+  var endAtSha = shaForQuery(options.from, tags);
+
+  var shaList = [];
+  var commitIterator = new Github.PageIterator('/repos/' + options.repo + '/commits');
+
+  // If from is not found, start at the newest commit.
+  var start = !startAtSha;
+
+  // Iterate through each commit -- from the most recent to the oldest.
+  while (commitIterator.goToNextPage()) {
+    for (var i = 0; i < commitIterator.data.length; i++) {
+      var sha = commitIterator.data[i].sha;
+
+      if (!start && sha === startAtSha) start = true;
+      if (start) shaList.push(sha);
+
+      if (endAtSha && sha === endAtSha) break;
+    }
+  }
+
+  return shaList;
 }
 
 /**
- * Go through all of the commits until the previous release based
- * on semver git tags and list out all of the closed issues.
- * @param branch
- * @returns {string}
+ * Build a release message by going through the latest commits
+ * on a branch and finding the closed issues.
+ * @param options
+ * @param options.repo The repo to search. Ex. dispatchme/meteor-slack-releases
+ * @param [options.branch] The branch to search. Defaults to master.
+ * @param [options.from] The oldest commit or tag to include (inclusive).
+ * If nothing is passed, it will include the first commit.
+ * @param [options.to] The newest commit or tag to include (inclusive).
+ * If nothing is passed, it will include the latest commit.
+ * @returns {String}
  */
-Github.releaseDescription = function (repo, query) {
-  Github.updateEvents(repo);
+Github.releaseDescription = function (options) {
+  Github.updateEvents(options.repo);
+
   var message = '';
-  var commitIds;
-  if (query.length == 40) {
-    commitIds = Github.commitsSinceLastVersion(repo, query); 
-  } else {
-    commitIds = Github.commitsSinceTag(repo, query);
-  }
-  if (!commitIds){
-    return 'Can\'t find `' + commitHash + '`';
-  }
+
+  var commitIds = Github.commits(options);
+  if (!commitIds.length)
+    return 'Can\'t find any commits';
+
   var events = Github.Events.find({
     commit_id: {$in: commitIds},
     event: 'closed'
   }).fetch();
-  if (events.length == 0) {
-    return 'Nothing found';
-  }
-  _.each(events, function (event) {
-    message += '<' + event.issue.title + '<' + event.issue.html_url + '|#' +
-    event.issue.number + '> ' + event.actor.login + '\n';
-  });  
+
+  if (events.length == 0)
+    return 'No events found.';
+
+  events.forEach(function (evt) {
+    var issue = evt.issue;
+    message += issue.title + ' <' + issue.html_url + '|#' +
+      issue.number + '> ' + evt.actor.login + '\n';
+  });
+  
   return message;
 };

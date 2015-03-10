@@ -7,7 +7,7 @@ var apiUrl = 'https://api.github.com';
  */
 Github.request = function (path) {
   var url = apiUrl + path;
-  console.log("URL ", url);
+
   var result = HTTP.get(url, {
     headers: {
       Authorization: 'token ' + Meteor.settings.public.GITHUB_TOKEN,

@@ -13,7 +13,7 @@ Slack.login = function (token) {
   var autoReconnect = true, autoMark = true;
   var client = Slack.client = new slackClient(token, autoReconnect, autoMark);
 
-  events = {
+  var events = {
     open: function () {
       console.log('Slack: open');
       _.each(loginHooks, function (hook) {
