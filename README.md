@@ -8,6 +8,8 @@ If you track your development tasks in GitHub issues, [close issues via commit m
 
 Say `rosie closed issues [commit hash or git tag]` in a slack channel and rosie will respond with the titles of the recently closed issues up until that commit hash or git tag.
 
+![Example slack message](http://i.imgur.com/AnE6z2K.png)
+
 ### What's next?
 
 We want to expand rosie to help automate other parts of the development workflow. Please feel free to make suggestions in the github issues of this project.
