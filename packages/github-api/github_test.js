@@ -1,4 +1,4 @@
-var REPO = 'dispatchme/meteor-slack-releases';
+var REPO = 'dispatchme/meteor-rosie';
 
 Tinytest.add('Commits Iterator', function (test) {
   var commitIds = Github.commits({
