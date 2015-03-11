@@ -1,4 +1,4 @@
-Github.commitIterator = function(repo, callback) {
+Github.commitIterator = function (repo, callback) {
   var iterator = new Github.PageIterator('/repos/' + repo + '/commits');
   while (iterator.goToNextPage()) {
     _.each(iterator.data, function(commit){
@@ -32,18 +32,16 @@ var shaForQuery = function (query, tags) {
  * Get the commits on the branch after the commit hash or tag.
  * @param options
  * @param options.repo The repo to search. Ex. dispatchme/meteor-slack-releases
- * @param [options.branch] The branch to search. Defaults to master.
+ * @param [options.branch] The branch to search. 
+ * Defaults to the default branch (usually master).
  * @param [options.from] The oldest commit or tag to include (inclusive).
- * If nothing is passed, it will include the first commit.
+ * Defaults to the first commit.
  * @param [options.to] The newest commit or tag to include (inclusive).
- * If nothing is passed, it will include the latest commit.
+ * Defaults to the latest commit.
  * @returns {Array.<String>} The commit shas.
  */
 Github.commits = function (options) {
   var tags = Github.getTags(options.repo);
-
-  // TODO
-  options.branch = options.branch || 'master';
 
   // The newest commit sha to include.
   var startAtSha = shaForQuery(options.to, tags);
@@ -52,7 +50,11 @@ Github.commits = function (options) {
   var endAtSha = shaForQuery(options.from, tags);
 
   var shaList = [];
-  var commitIterator = new Github.PageIterator('/repos/' + options.repo + '/commits');
+
+  var commitBaseUrl = '/repos/' + options.repo + '/commits';
+  if (options.branch) commitBaseUrl += '?sha=' + options.branch;
+
+  var commitIterator = new Github.PageIterator(commitBaseUrl);
 
   // If from is not found, start at the newest commit.
   var start = !startAtSha;
@@ -77,11 +79,12 @@ Github.commits = function (options) {
  * on a branch and finding the closed issues.
  * @param options
  * @param options.repo The repo to search. Ex. dispatchme/meteor-slack-releases
- * @param [options.branch] The branch to search. Defaults to master.
+ * @param [options.branch] The branch to search.
+ * Defaults to the default branch (usually master).
  * @param [options.from] The oldest commit or tag to include (inclusive).
- * If nothing is passed, it will include the first commit.
+ * Defaults to the first commit.
  * @param [options.to] The newest commit or tag to include (inclusive).
- * If nothing is passed, it will include the latest commit.
+ * Defaults to the latest commit.
  * @returns {String}
  */
 Github.releaseDescription = function (options) {
