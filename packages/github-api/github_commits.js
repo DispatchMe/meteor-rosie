@@ -104,7 +104,7 @@ Github.releaseDescription = function (options) {
   if (events.length == 0)
     return 'No events found.';
 
-  events.forEach(function (evt) {
+  _.sortBy(events, 'created_at').forEach(function (evt) {
     var issue = evt.issue;
     message += issue.title + ' <' + issue.html_url + '|#' +
       issue.number + '> ' + evt.actor.login + '\n';
