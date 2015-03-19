@@ -104,7 +104,7 @@ Github.releaseDescription = function (options) {
   if (events.length == 0)
     return 'No events found.';
 
-  events.forEach(function (evt) {
+  _.sortBy(events, 'created_at').forEach(function (evt) {
     var issue = evt.issue;
     var labels = _.pluck(evt.issue.labels, 'name');
     var calloutTags = _.intersection(Meteor.settings['CALLOUT_TAGS'], labels);
