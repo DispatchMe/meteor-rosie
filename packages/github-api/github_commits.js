@@ -106,8 +106,20 @@ Github.releaseDescription = function (options) {
 
   events.forEach(function (evt) {
     var issue = evt.issue;
+    var labels = _.pluck(evt.issue.labels, 'name');
+    var calloutTags = _.intersection(Meteor.settings['CALLOUT_TAGS'], labels);
+    if (calloutTags.length > 0) {
+      message += '*[' + calloutTags.join('][') + '] ';
+    }
+
     message += issue.title + ' <' + issue.html_url + '|#' +
-      issue.number + '> ' + evt.actor.login + '\n';
+      issue.number + '> ' + evt.actor.login;
+    
+    if (calloutTags.length) {
+      message += '*';
+    }
+
+    message += '\n';
   });
   
   return message;

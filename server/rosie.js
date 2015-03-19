@@ -52,7 +52,8 @@ Rosie.processMessage = function (message) {
       channel.postMessage({
         username: 'rosie',
         icon_url: 'https://s3-us-west-2.amazonaws.com/slack-files2/avatars/2015-02-21/3799878733_5a928450e7107b46437f_72.jpg',
-        text: releaseText
+        text: releaseText,
+        mrkdwn: true
       });
     }
   }
