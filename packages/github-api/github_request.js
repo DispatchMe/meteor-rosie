@@ -10,7 +10,7 @@ Github.request = function (path) {
 
   var result = HTTP.get(url, {
     headers: {
-      Authorization: 'token ' + Meteor.settings.public.GITHUB_TOKEN,
+      Authorization: 'token ' + Meteor.settings.GITHUB_TOKEN,
       'User-Agent': 'rosie-slack-robot'
     }
   });
