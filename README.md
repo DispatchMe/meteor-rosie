@@ -6,7 +6,7 @@ If you track your development tasks in GitHub issues, [close issues via commit m
 
 ### What does she do?
 
-Say `rosie closed issues [commit hash or git tag]` in a slack channel and rosie will respond with the titles of the recently closed issues up until that commit hash or git tag.
+Say `rosie issues since [commit hash or git tag]` in a slack channel and rosie will respond with the titles of the issues that are referenced in commits after that commit hash or git tag.
 
 ![Example slack message](http://i.imgur.com/AnE6z2K.png)
 

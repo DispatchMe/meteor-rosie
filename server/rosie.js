@@ -1,7 +1,7 @@
 Rosie = {};
 
-var HELP_MESSAGE = 'Type "closed issues [commit|tag]" to list the closed issues ' +
-  'after that commit or tag (inclusive).';
+var HELP_MESSAGE = 'Type "issues fixed since [commit|tag]" to list the referenced' +
+  ' issues after that commit or tag (inclusive).';
 
 Rosie.start = function () {
   // XXX, not for v1
@@ -31,7 +31,7 @@ Rosie.processMessage = function (message) {
   if (messageText.indexOf('rosie') > -1) {
     if (messageText.indexOf('help') > -1) return channel.send(HELP_MESSAGE);
 
-    if (messageText.indexOf('closed issues') > -1) {
+    if (messageText.indexOf('rosie issues fixed since') > -1) {
       // Find the repo -> branche dict for the current channel.
       var reposBranches = CHANNEL_REPOS[channelName];
       if (!reposBranches) return;
@@ -45,9 +45,11 @@ Rosie.processMessage = function (message) {
         break;
       }
 
-      var query = messageText.split(/(.*)closed\ issues\ /)[2] || '';
-
-      var releaseText = Github.releaseDescription({ repo: repo, branch: branch, from: query });
+      var releaseText = Github.releaseDescription({
+        repo: repo,
+        branch: branch,
+        from: messageText.substring(25)
+      });
 
       channel.postMessage({
         username: 'rosie',
