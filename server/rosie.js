@@ -45,11 +45,16 @@ Rosie.processMessage = function (message) {
         break;
       }
 
-      var releaseText = Github.releaseDescription({
-        repo: repo,
-        branch: branch,
-        from: messageText.substring(25)
-      });
+      var releaseText = '';
+      try {
+        releaseText = Github.releaseDescription({
+          repo: repo,
+          branch: branch,
+          from: messageText.substring(25)
+        });
+      } catch (e) {
+        releaseText = 'Error generating message ' + e;
+      }
 
       channel.postMessage({
         username: 'rosie',
