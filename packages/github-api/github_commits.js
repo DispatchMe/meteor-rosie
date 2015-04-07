@@ -34,9 +34,9 @@ var shaForQuery = function (query, tags) {
  * @param options.repo The repo to search. Ex. dispatchme/meteor-slack-releases
  * @param [options.branch] The branch to search.
  * Defaults to the default branch (usually master).
- * @param [options.from] The oldest commit or tag to include (inclusive).
- * Defaults to the first commit.
- * @param [options.to] The newest commit or tag to include (inclusive).
+ * @param [options.from] The oldest commit or tag to exclude.
+ * Defaults to including the first commit.
+ * @param [options.to] The newest commit or tag to include.
  * Defaults to the latest commit.
  * @returns {Object} An object dict of the commits. sha -> commit.
  */
@@ -45,9 +45,11 @@ Github.commits = function (options) {
 
   // The newest commit sha to include.
   var startAtSha = shaForQuery(options.to, tags);
+  if (options.to && !startAtSha) throw 'Could not find ' + options.to;
 
   // The oldest commit sha to include.
   var endAtSha = shaForQuery(options.from, tags);
+  if (options.from && !endAtSha) throw 'Could not find ' + options.from;
 
   var commits = {};
 
@@ -64,10 +66,13 @@ Github.commits = function (options) {
     for (var i = 0; i < commitIterator.data.length; i++) {
       var commit = commitIterator.data[i];
 
+      // Start at the from sha -- inclusive
       if (!started && commit.sha === startAtSha) started = true;
-      if (started) commits[commit.sha] = commit;
 
+      // End at the endAtSha -- exclusive
       if (endAtSha && commit.sha === endAtSha) return commits;
+
+      if (started) commits[commit.sha] = commit;
     }
   }
 
@@ -81,9 +86,9 @@ Github.commits = function (options) {
  * @param options.repo The repo to search. Ex. dispatchme/meteor-slack-releases
  * @param [options.branch] The branch to search.
  * Defaults to the default branch (usually master).
- * @param [options.from] The oldest commit or tag to include (inclusive).
- * Defaults to the first commit.
- * @param [options.to] The newest commit or tag to include (inclusive).
+ * @param [options.from] The oldest commit or tag to exclude.
+ * Defaults to including the first commit.
+ * @param [options.to] The newest commit or tag to include.
  * Defaults to the latest commit.
  * @returns {String}
  */
@@ -96,8 +101,17 @@ Github.releaseDescription = function (options) {
   if (_.isEmpty(commits))
     return 'Can\'t find any commits';
 
+  console.log({
+    repo: options.repo,
+    commit_id: {$in: _.keys(commits)},
+    issue: {$exists: true},
+    // Ignore pull request issues
+    'issue.pull_request': {$exists: false}
+  });
+
   // Find issues referenced from the commits in the range.
   var events = Github.Events.find({
+      repo: options.repo,
       commit_id: {$in: _.keys(commits)},
       issue: {$exists: true},
       // Ignore pull request issues

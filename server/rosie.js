@@ -1,7 +1,7 @@
 Rosie = {};
 
 var HELP_MESSAGE = 'Type "issues fixed since [commit|tag]" to list the referenced' +
-  ' issues after that commit or tag (inclusive).';
+  ' issues after that commit or tag.';
 
 Rosie.start = function () {
   // XXX, not for v1

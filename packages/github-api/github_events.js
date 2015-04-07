@@ -5,7 +5,7 @@ Github.Events = new Meteor.Collection('github-events');
  */
 Github.updateEvents = function (repo) {
   var iterator = new Github.PageIterator('/repos/' + repo + '/issues/events');
-  
+
   var newEventCount = 0;
 
   var logNewEvents = function () {
@@ -16,9 +16,10 @@ Github.updateEvents = function (repo) {
     for (var i = 0; i < iterator.data.length; i++) {
       var githubEvent = iterator.data[i];
       githubEvent._id = githubEvent.id;
+      githubEvent.repo = repo;
 
       var result = Github.Events.upsert(githubEvent.id, githubEvent);
-      
+
       // Stop iterating when we hit an event we have already cached.
       if (!result.insertedId) return logNewEvents();
 
@@ -26,5 +27,5 @@ Github.updateEvents = function (repo) {
     }
 
     logNewEvents();
-  };
+  }
 };
